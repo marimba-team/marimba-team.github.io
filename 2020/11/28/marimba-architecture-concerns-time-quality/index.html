@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/logo.png">
+
+    <title>
+        
+          빨리 만들기 vs 잘 만들기 - Marimba tech blog
+        
+    </title>
+
+    <link rel="canonical" href="https://marimba-team.github.io/2020/11/28/marimba-architecture-concerns-time-quality/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Marimba Tech Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://marimba-team.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#architecture" title="architecture">architecture</a>
+                        
+                          <a class="tag" href="/tags/#culture" title="culture">culture</a>
+                        
+                    </div>
+                    <h1>빨리 만들기 vs 잘 만들기</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 김기훈 (koreakihoon@gmail.com) on
+                        2020-11-28
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>개인적으로 OOP, TDD 에서 중요하게 생각하는 것이 있다.<br>객체의 내부와 외부를 분리하는 것.<br>이를 통해 외부에는 일정한 품질의 인터페이스를 제공하고 내부를 자유롭게 구현하는 것이다.</p>
+<p>이말은 곧, 객체 내부의 품질에 대해서 아무도 모르게 내가 결정하면 되는 것이다.<br>시간이 부족할 때는 값을 하드코딩 하거나, 일단 코드를 중복 해서 작성 할 수도 있다.<br>(물론 우리의 클린코드, 소프트웨어 장인정신에 위배 될 수는 있다.)</p>
+<p>현재, 스타트업의 초기 단계 이거나, 제품의 MVP(Minimum Viable Product)를 만들고 있는 상황이라고 가정하자.<br>소프트웨어의 내부 품질을 높이느라고 시장에 제품을 내놓는 시기가 늦어지는 것이 과연 옳은 결정 일까?</p>
+<p>집에서 전기를 사용 할 때 이렇게 꼬인 전선들에 관심이 있을까?<br><img src="/images/mae/telephone.jpg" alt="복잡하게 꼬인 전선들에 관심있을까?"></p>
+<h3 id="코드-품질"><a href="#코드-품질" class="headerlink" title="코드 품질"></a>코드 품질</h3><p>경제적 관점에서 봤을때,<br>소프트웨어의 사용자, 혹은 API를 사용하는 다른 개발자 입장에서 동일한 기능에 대해서 굳이 더 비싼 비용을 지불하고 사용할 이유가 있을까?<br>사용자는 제품의 내부 품질, 코드 품질이 얼마나 좋은지 알기 어렵다.<br>그렇다면 대부분 비용이 더 싸고 지금 당장 필요한 제품을 선택하지 않을까?</p>
+<p><strong>그래서 개인적으로는 내부 품질이 조금은 낮더라도 기능을 시장에서 하루라도 더 빨리 검증해 보는 것이 좋다고 생각한다.</strong></p>
+<p>잠깐,<br>그렇다고 내부 품질이 엉망이어도 상관 없다는 말인가?<br>그토록 외치던 클린 코드, 클린 아키텍처, 소프트웨어 장인정신이 모두 다 필요 없다는 말인가?<br>그저 빨리 만들고 빨리 시장에 내놓는 것이 정답이라는 말인가?</p>
+<p>개발자라면 모두가 알고 있다.<br>설계가 잘 되어 있지 않으면, 시간이 지나고 기능이 계속 추가 될 때마다, 복잡도가 올라간다.<br>동일 한 수준의 기능을 추가하는데 더 많은 시간을 사용하게 된다.<br><strong>결과적으로 팀의 속도는 점점 느려지게 될 것 이다.</strong></p>
+<p>대부분 이를 레거시 코드라 부르고, 결국 언젠가 전체를 새로 개발하게 된다. Big Rewrite..</p>
+<p>과거에 SI 프로젝트 중심으로 일을 할 때, 회사에서 내세운 슬로건이 하나 있다.<br>“납기는 생명 품질은 자존심”<br>리소스는 한정되어 있고 할 일은 언제나 많고 기능이 자주 변경되는 상황에서 납기는 반드시 지켜야 되지만, 잘 설계된 아키텍처와 코드를 만들어야 하고 버그도 없어야 한다는 말 이다.</p>
+<p>가능한 말 일까?</p>
+<p>완벽한 협업 하에 고정된 기능 목록에서 절대 변경되지 않고, 가치가 있는 기능인가와 별개로 정해진 기간에 고객에게 전달만 되면 되는 소프트웨어라면 가능 할 수는 있겠다. </p>
+<p>하지만 이렇게 완벽한 상황은 존재 하지 않는다.<br><strong>우리는 사용자가 무엇을 원하는지 잘 알지 못하고, 언제나 상황은 변한다.</strong></p>
+<p>무엇이 사용자에게 가치가 있는지 모르는 상태에서 아키텍처를 고민하고 클린 코드를 작성하는 것이 <strong>낭비</strong> 일 수도 있다.<br>하지만 어느 순간에는 클린 코드, 클린 아키텍처가 없다면 기능 추가가 어렵고 작은 수정에도 side effect 가 발생하게 된다.<br>즉, <strong>품질</strong>은 <strong>비용</strong>의 관점에서 언제나 <strong>Trade Off</strong> 다.</p>
+<p>내부 품질을 높이는 것에 누군가는 <strong>오버 엔지니어링</strong> 이라고 하고, 반대로 낮추는 것에 대해서 누군가는 <strong>기술 부채</strong>가 쌓여간다고 말을 한다.</p>
+<h3 id="그래서-내부-품질에-대해서-신경-쓰라는-거야-말라는-거야"><a href="#그래서-내부-품질에-대해서-신경-쓰라는-거야-말라는-거야" class="headerlink" title="그래서 내부 품질에 대해서 신경 쓰라는 거야 말라는 거야?"></a>그래서 내부 품질에 대해서 신경 쓰라는 거야 말라는 거야?</h3><p>PO, PM은 더 빨리 원하는 기능이 추가되기를 바란다.<br>디자이너는 여기에 더해 사용성도 지속적으로 높이고 싶어 한다.<br>개발자는 여기에 더해 좋은 설계, 클린 코드를 놓치고 싶지 않아 한다.</p>
+<p>우리 팀도 여전히 답을 찾기 위해 노력하고 있다.</p>
+<p>처음 팀이 꾸려졌을때 우리 팀 리더에게 물어본 적이있다.<br><strong>“우리가 당장 만드려는 것이 Product 인가요 MVP 인가요?”</strong><br>리더는 “우리가 당장 만드려고 하는 것은 <strong>MVP</strong> 이다. 근데 개발적으로 뭐가 다르냐”고 물어왔다.</p>
+<p>그래서 난<br>“당장은 코드 품질은 신경쓰지 않겠다. 테스트 코드도 최소한으로 작성한다.<br>PM, Designer 가 우리 제품으로 사용자에게 가치를 검증 하는 것에만 집중 하겠다.”<br>라고 대답했다.<br><img src="/images/mae/slamdunk.jpg" alt="런&amp;건(슬램덩크 완전판 18권)"><br>사용자에게 가치있는 것을 찾아서 만든다. 그리고 빠르게 검증한다.<br>이 것이 MVP 기간에 우리 팀의 작전이었다. </p>
+<h3 id="MVP-란"><a href="#MVP-란" class="headerlink" title="MVP 란?"></a>MVP 란?</h3><p>MVP 는 최종적으로 만들고 싶은 전체 기능 셋에서 중요한 부분만 뽑아 놓은 것이 아니다.<br>적어도 우리 팀에게 있어서는 <strong>사용자에게 필요한 가치를 찾아가는 여정</strong>이라고 생각했다.<br>오늘 짠 소스가 내일 필요 없을 수도 있는 것이다. 우리는 코드를 엉망으로 작성하진 않았지만 그렇다고 아름답게 작성하려고 노력하지 않았다.<br>중복코드도 허용했다. 다만, 최소한의 표준만 가지고 지우기 쉬운 코드를 작성하는 것에 집중하며 빠르게 개발했다. </p>
+<p><strong>그럼 언제까지가 MVP 일까?</strong></p>
+<p>언제까지 빠르게만 개발해야 할까?<br>중복된 코드는 많아 지고, 점점 복잡도가 올라가고 있는 상황이다.<br>하나의 버그를 수정하면 여기저기에서 Side Effect 가 발생한다.<br>그리고 MVP 라고 해놓고 어느순간 오픈하고 실제 Product 이라고 말을 한다!</p>
+<p>우리 팀이 앞만 보고 달리던 것을 멈춘 것은 두가지 이유였다.</p>
+<ul>
+<li>사용자 인터뷰 할 때 말고도 <strong>실제 사용자</strong>가 들어와서 사용하길 원했다.</li>
+<li>사용자 인터뷰에서 <strong>사용성과 성능</strong>에 대한 피드백을 받기 시작했다.</li>
+</ul>
+<p>우리는 이 이유로 두, 세번의 <strong>큰 리팩토링</strong>을 진행했다.<br>(자동화된 테스트 코드 없이 큰 리팩토링을 하는 것은 정말 큰 모험이었다.)</p>
+<p>처음부터 성능도 좋고 버그도 없이 <strong>잘</strong> 만드는 것도 중요하다.<br>이런 이유로 한번 떠난 사용자를 다시 돌아오게 만드는 것은 어렵기 때문이다.</p>
+<p>하지만 Working Software 를 가지고 <strong>빠르게</strong> 가치를 검증해보는 것도 중요하다.<br>우리가 잘 하기 위해서 노력했던 것들이 사용자에게 가치가 없다면 모든 것이 <strong>낭비</strong> 이기 때문이다. </p>
+<h3 id="Good-Enough"><a href="#Good-Enough" class="headerlink" title="Good Enough"></a>Good Enough</h3><p>우리는 지난 9월에 베타 오픈을 했다. 그럼 MVP 가 끝난 것 일까?<br>우리 팀의 현재 위치는 초기 MVP 를 지나 Product Marker Fit 에 도달 하기 위해 노력하고 있다.<br>그리고 여전히 작은 MVP 를 계속해서 반복하는 중 이다.<br>다른 팀들과 마찬가지로 Time, Scope, Cost 라는 제약조건을 가지고 제품을 만들고 있다.<br>Scope 을 줄이고 우선순위를 정한다고 해도, 여전히 시간과 자원 대비 할 일은 언제나 많다.</p>
+<p>코드를 리뷰하고 계속해서 좋은 방향으로 리팩토링 해 나가는 것은 매우 중요하다.<br>하지만 문제가 있고, 버그가 있는 코드가 아니라 정상적으로 동작하는 코드라면 일단 우선순위를 조금 미뤄보는 것은 어떨까?<br>코드 품질이 중요한 만큼 팀의 속도도 중요하다.</p>
+<p>(결국 품질과 속도의 문제는 닭이 먼저냐 달걀의 먼저냐 처럼 끝없는 싸움인 것 같다.)</p>
+<h3 id="Marimba-팀"><a href="#Marimba-팀" class="headerlink" title="Marimba 팀"></a>Marimba 팀</h3><p>개인적으로 지난 몇 년간, 코드 품질을 높이고 버그를 최소화 하는 방법에 집중 했다.<br>여기 저기 TDD, OOP, XP 등에 대해서 발표도 하고 다녔다.<br>하지만 지난 1년간 Marimba 라는 제품을 만들 면서 많은 생각이 들었다.</p>
+<p>잘 만들면 가만히 있어도 사용자가 알아서 찾아 와 줄까?<br>기능 하나 하나 잘 만들고 완벽한 상태에서 릴리즈를 해야 하나?<br>정말 품질은 자존심인가?<br>그 기간 동안 우리를 기다려 줄까?</p>
+<p>경쟁 제품들은 우리보다 몇 년 앞서 있다.<br>모든 기능이 우리에 비해 완벽하고 성능도 뛰어나다.<br>그들과 같은 방향으로 달리다 보면 언제나 뒤에서 따라만 가는 기분이다.</p>
+<p>빠르게 만드는 것도 잘 만드는 것도<br>남들과 같은 방향이라면 이길 수 없는 것 같다. </p>
+<p>지금 우리팀이 실험해 보고 있는 방법은 이렇다.<br>새로운 기능을 작게 빠르게 만들고, 이터레이션 마다 점진적으로 발전시킨다.<br>그리고 용기를 가지고 코드 개선을 지속적으로 한다. (하지만 과하지 않게)</p>
+<p>만들고 검증 하는 것이 먼저다.<br>개선은 그 다음이다.</p>
+<p>코드보다 <strong>사용자의 문제를 해결</strong>하는 것에 더 집중한다.</p>
+<p>이게 실제 제품을 만들면서 얻은 가장 큰 깨달음 이다.</p>
+<p><a target="_blank" rel="noopener" href="https://marimba.team/">https://marimba.team</a> </p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/12/01/a-tales-of-two-editor/" data-toggle="tooltip" data-placement="top" title="두 에디터 이야기">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                </ul>
+
+                
+
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#architecture" title="architecture">architecture</a>
+                        
+                          <a class="tag" href="/tags/#culture" title="culture">culture</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://marimba.team" target="_blank">marimba.team</a></li>
+                    
+                        <li><a href="https://kihoonkim.github.io" target="_blank">Ki Blog</a></li>
+                    
+                        <li><a href="https://papercut.blog" target="_blank">June Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Marimba Tech Blog 2020 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://marimba-team.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'G-JCKT5N5343';
+    var _gaDomain = 'https://marimba-team.github.io/';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://marimba-team.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

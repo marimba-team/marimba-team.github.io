@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/logo.png">
+
+    <title>
+        
+          react-redux connect: mapStateToProps의 동작과 올바른 사용법 탐구 1/2 - Marimba tech blog
+        
+    </title>
+
+    <link rel="canonical" href="https://marimba-team.github.io/2020/12/05/react-redux-connect-mapStateToProps-1/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Marimba Tech Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://marimba-team.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#marimba" title="marimba">marimba</a>
+                        
+                          <a class="tag" href="/tags/#performance" title="performance">performance</a>
+                        
+                          <a class="tag" href="/tags/#react" title="react">react</a>
+                        
+                          <a class="tag" href="/tags/#redux" title="redux">redux</a>
+                        
+                          <a class="tag" href="/tags/#connect" title="connect">connect</a>
+                        
+                          <a class="tag" href="/tags/#mapStateToProps" title="mapStateToProps">mapStateToProps</a>
+                        
+                    </div>
+                    <h1>react-redux connect: mapStateToProps의 동작과 올바른 사용법 탐구 1/2</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by marimba (dev@marimba.team) on
+                        2020-12-05
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="react-redux-connect의-첫번째-파라미터-mapStateToProps-동작-이야기-1-2"><a href="#react-redux-connect의-첫번째-파라미터-mapStateToProps-동작-이야기-1-2" class="headerlink" title="react-redux connect의 첫번째 파라미터, mapStateToProps 동작 이야기 1/2"></a>react-redux connect의 첫번째 파라미터, mapStateToProps 동작 이야기 1/2</h1><h2 id="서론-강박-코딩-그리고-성능"><a href="#서론-강박-코딩-그리고-성능" class="headerlink" title="서론: 강박, 코딩, 그리고 성능"></a>서론: 강박, 코딩, 그리고 성능</h2><p>사실 저는 약간의 강박이 있음을 고백하며 시작합니다. 효율중시 측면에서랄까, 다 보고 더이상 안 보는 브라우저 창은 바로바로 정리해야 한다던가, 한동안 사용하지 않을 프로그램이 실행 중인 상태로 있는 것을 참지 못합니다. 더이상의 필요에서 벗어난 파일들은 저장공간으로부터 주기적으로 휴지통으로 들어가고, 그마저도 휴지통 비우기를 해야 직성이 풀리죠. 그래야 진짜 그 디스크 공간이 비로소 실제 가용공간이 된다는 걸 아니까요. </p>
+<p><img src="../images/kate/browser+4.png" alt="브라우저 탭은 네 개로 충분하다">{ width=600 }</p>
+<p>대체적으로 효율성과 관련된, 정리에 관한 것들에 약간의 강박이 있는 편인데, 그 중에서도 CPU와 메모리를 가진 기계들에 대해서는 이 강박이 꽤 큰 편입니다. 어릴적부터 컴퓨터를 너무 좋아했던 기억 때문인가 봅니다. (나의 친구가 열일을 하느라 발열이 심해지면 금세 터져서 죽을 것만 같았어요)</p>
+<p>그러다 보니, 이 시대의 컴퓨팅 능력의 발전 수준이 무색하리만치, 저는 코드를 작성하면서 종종 아주 작은 것에 집착을 하며 ‘어떤 코드가 더 연산량이 적을 것인가’ 를 고민할 때가 있습니다. 사실은 실제 연산량의 차이로 인한 이득보다 내가 이걸 고민하는 연산량이 더 낭비일 것 같은데 말이죠.</p>
+<p><a target="_blank" rel="noopener" href="https://marimba.team/">marimba</a> 를 개발하면서는 이 강박이 좀 더 심해지는 것을 느꼈습니다. 불필요하게 동작하는 코드를 보면 다른때보다 스트레스를 받더라구요. 이유는, 우리 <a target="_blank" rel="noopener" href="https://marimba.team/">marimba</a> 가 성능에 굉장히 민감한 친구이기 때문입니다. 우리 <a target="_blank" rel="noopener" href="https://marimba.team/">marimba</a> 개발팀의 목표는, 화이트보드 캔버스 위에 만 개의 아이템이 있을 경우에도 부드럽게 동작하는 화이트보드를 목표로 합니다. 코드 한 덩어리가 1번 돌아갈 때와 10000번 돌아갈 때의 차이를 생각해 보면, 작은 function 하나라도 허투루 짤 수 없었습니다.</p>
+<p><img src="../images/kate/10000.png" alt="고통의 시작">{ width=600 }</p>
+<p>그러다가 한번은, 우리가 사용하는 react-redux 의 connect 의 첫 번째 파라미터인 mapStateToProps 에 주목할 일이 있었습니다. <a target="_blank" rel="noopener" href="https://marimba.team/">marimba</a> 화이트보드 내부의 특정 동작에서 스크립트 에러가 났고, 추정되는 코드라인의 위치에는 이 에러와 관련된 코드가 전혀 없었고, 결국 버그의 원인을 찾는 데에 아주 <em>노가다적인</em> 방법으로 한참의 시간이 걸린 끝에 버그의 위치를 찾았습니다. <strong>그것은 바로 mapStateToProps 내부. 그것도 아주 매우 몹시 연관성없는 컴포넌트의.</strong></p>
+<p>이런저런 다른 컴포넌트의 connect용 mapStateToProps 내부에서 이러저러한 로직을 수행하고 있었던 겁니다. 심지어 만 개 까지 늘어날 수 있는(!!) 문제의 녀석들 중 하나였습니다. 어떤 단순 동작만을 실행했는데, 전혀 무관한 다른 컴포넌트(connect된)에서 state 변경을 읽었고, 동작했고, 에러를 발생시킨 거였죠.</p>
+<p>저는 스트레스 수치가 올라가는 것을 느꼈습니다. 분명 제가 알고 있는 mapStateToProps 는, 내가 (컴포넌트가) 구독하지 않은 state 가 변경되더라도 무조건 실행되는 것으로 알고 있습니다. 그런데 이 내부에서 로직을 수행한다는 게, 이게 과연 합리적인 일일까, 아이템 건수만큼 이런 비효율이 발생할텐데. 저는 우리 코드를 둘러봄과 동시에 mapStateToProps 를 파고들어 보기로 했습니다.</p>
+<h2 id="실험-정말-간단한-react-redux-app"><a href="#실험-정말-간단한-react-redux-app" class="headerlink" title="실험 : 정말 간단한 react + redux app"></a>실험 : 정말 간단한 react + redux app</h2><p>일단 내가 알고 있는 것을 실험해 보자.</p>
+<p>a, b, c 라는 state 를 만들어 놓고, 버튼으로 abc 중 하나의 state 만을 변경하는 앱.</p>
+<p><img src="../images/kate/screen1.png" alt="이런 앱">{ width=600 }</p>
+<ul>
+<li>아래 :  state ‘a’ 를 구독하고 있는 컴포넌트<pre><code>      &#39;b&#39;, &#39;c&#39; 를 구독하는 컴포넌트도 있고, 구조 똑같음!</code></pre>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; useEffect &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; connect &#125; <span class="keyword">from</span> <span class="string">&#x27;react-redux&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MonitorA</span>(<span class="params">&#123; a &#125;</span>) </span>&#123;</span><br><span class="line">  useEffect(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;prop a 가 변경되었습니다!&#x27;</span>);</span><br><span class="line">  &#125;, [a]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;div&gt;a 를 구독하는 컴포넌트에서 표시 : &#123;a&#125;&lt;/div&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> mapStateToProps = <span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;a 를 구독하는 컴포넌트의 mapStateToProps 내부에서 호출됨&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123; <span class="attr">a</span>: state.a &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> connect(mapStateToProps)(MonitorA);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>state ‘b’ 값을 바꾸는 액션인 ‘dispatch set B’ 버튼을 누른 결과 화면(console)</p>
+<p><img src="../images/kate/screen2.png">{ width=600 }</p>
+<p>예상대로,  useEffect 는 b 만 호출되었고,</p>
+<p>mapStateToProps 는 모든 컴포넌트에서 호출됨!</p>
+<h2 id="실험-결과로-하여금-생각해보면"><a href="#실험-결과로-하여금-생각해보면" class="headerlink" title="실험 결과로 하여금 생각해보면,"></a>실험 결과로 하여금 생각해보면,</h2><ul>
+<li>만약 state로부터 <strong>a 의 값을 받아 가공</strong>해서 써야 하는 컴포넌트라면, </li>
+<li>가공하는 로직은</li>
+<li>mapStateToProps 에서 수행하는 것 보단</li>
+<li>a 컴포넌트의 useEffect 에서 수행해야 효율적일 것이다.!</li>
+</ul>
+<p>전혀 무관한 state값이 바뀌더라도, 실제 필요한 값의 변경이 안 일어났을 때도,<br>mapStateToProps 에서 로직을 수행하면 무조건 수행될 것이기에 쓸모없는 연산 낭비일 것이다.</p>
+<p><strong>state 변경 액션이 엄청 많거나, mapStateToProps 를 달고 있는 컴포넌트가 엄청나게 많다면?</strong><br><strong>mapStateToProps 내부의 연산이 복잡하다면?</strong></p>
+<h1 id="react-redux-에서-이야기하는-guidelines-그리고-해결책"><a href="#react-redux-에서-이야기하는-guidelines-그리고-해결책" class="headerlink" title="react-redux 에서 이야기하는 guidelines, 그리고 해결책"></a>react-redux 에서 이야기하는 guidelines, 그리고 해결책</h1><p>은 길어진 관계로 2편에서…</p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2020/12/01/a-tales-of-two-editor/" data-toggle="tooltip" data-placement="top" title="두 에디터 이야기">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#marimba" title="marimba">marimba</a>
+                        
+                          <a class="tag" href="/tags/#performance" title="performance">performance</a>
+                        
+                          <a class="tag" href="/tags/#react" title="react">react</a>
+                        
+                          <a class="tag" href="/tags/#redux" title="redux">redux</a>
+                        
+                          <a class="tag" href="/tags/#connect" title="connect">connect</a>
+                        
+                          <a class="tag" href="/tags/#mapStateToProps" title="mapStateToProps">mapStateToProps</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://marimba.team" target="_blank">marimba.team</a></li>
+                    
+                        <li><a href="https://kihoonkim.github.io" target="_blank">Ki Blog</a></li>
+                    
+                        <li><a href="https://papercut.blog" target="_blank">June Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Marimba Tech Blog 2020 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://marimba-team.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'G-JCKT5N5343';
+    var _gaDomain = 'https://marimba-team.github.io/';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://marimba-team.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
